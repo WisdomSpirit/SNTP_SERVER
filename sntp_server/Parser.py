@@ -1,5 +1,6 @@
 import random
 import struct
+import math
 
 import Time
 
@@ -10,9 +11,9 @@ def parse_from(data):
     try:
         packet = struct.unpack(b"!BBBbiI4B2I2I2I2I", data[:48])
         result = []
-        LI = int(bin(packet[0])[2:4], 2)
-        VN = int(bin(packet[0])[4:7], 2)
-        MODE = int(bin(packet[0])[7:10], 2)
+        LI = int(('0'*8+bin(packet[0])[2:])[-8:][:2], 2)
+        VN = int(('0'*8+bin(packet[0])[2:])[-8:][2:5], 2)
+        MODE = int(('0'*8+bin(packet[0])[2:])[-8:][5:], 2)
         STRATUM = packet[1]
         Poll = packet[2]
         Precision = packet[3]
@@ -37,24 +38,26 @@ def parse_to(inaccuracy, args):
         LIVNMODE = (li << 6) + (version << 3) + mode
         stratum = 3
         poll = args[4]
-        precision = random.randint(-20,-6)
-        root_delay = random.randint(0, 512)
-        root_disp = random.randint(0, 512)
+        precision = random.randint(-20, -6)
+        root_delay = random.randint(-2, 512)
+        root_disp = random.randint(-2, 512)
         reference_identifier = 0
         shifter = 24
         i = 0
-        while shifter != 0:
-            reference_identifier += ID[i] << shifter
+        while shifter >= 0:
+            reference_identifier += (ID[i] << shifter)
             shifter -= 8
             i += 1
         time = Time.get_time(inaccuracy)
-        reference_timestamp = time << 32 + random.randint()
-        originate_timestamp = args[12]
-        recieved_timestamp = time << 32 + random.randint()
-        transmit_timestamp = time << 32 + random.randint()
+        reference_timestamp = int((int(math.floor(time)) << 32) + random.random())
+        originate_timestamp = (args[12][0] << 32) + args[12][1]
+        time = Time.get_time(inaccuracy)
+        recieved_timestamp = int((int(math.floor(time)) << 32) + random.random())
+        transmit_timestamp = int((int(math.floor(time)) << 32) + random.random())
 
-        return struct.pack("!BBBbiI4B2I2I2I2I",
-                           (LIVNMODE, stratum, poll, precision, root_delay, root_disp, reference_identifier +
-                                          reference_timestamp, originate_timestamp, recieved_timestamp, transmit_timestamp))
+        return struct.pack("!4biII4Q",
+                           LIVNMODE, stratum, poll, precision, root_delay, root_disp, reference_identifier,
+                            reference_timestamp, originate_timestamp, recieved_timestamp, transmit_timestamp)
+
     except Exception:
         print("Can't make a package from a data, recieved")
