@@ -10,7 +10,6 @@ def parse_from(data):
     """Parse the SNTP UDP packet"""
     try:
         packet = struct.unpack(b"!BBBbiI4B2I2I2I2I", data[:48])
-        result = []
         LI = int(('0'*8+bin(packet[0])[2:])[-8:][:2], 2)
         VN = int(('0'*8+bin(packet[0])[2:])[-8:][2:5], 2)
         MODE = int(('0'*8+bin(packet[0])[2:])[-8:][5:], 2)
@@ -58,6 +57,5 @@ def parse_to(inaccuracy, args):
         return struct.pack("!4biII4Q",
                            LIVNMODE, stratum, poll, precision, root_delay, root_disp, reference_identifier,
                             reference_timestamp, originate_timestamp, recieved_timestamp, transmit_timestamp)
-
     except Exception:
-        print("Can't make a package from a data, recieved")
+        print("Can't make a package from a data, received")

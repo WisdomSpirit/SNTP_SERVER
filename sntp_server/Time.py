@@ -1,9 +1,7 @@
 from datetime import datetime
 
 
-NTP_UTC_OFFSET = 2208988800
-
-def get_time(accuracy):
+def get_time(inaccuracy):
     """Returns time in SNTP UTC format (from UTC epoch)"""
-    time = datetime.now().timestamp() + NTP_UTC_OFFSET + accuracy
+    time = datetime.utcnow().timestamp() + inaccuracy
     return time

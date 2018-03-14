@@ -11,7 +11,7 @@ queue = collections.deque()
 
 
 class Server:
-    def __init__(self,inaccuracy):
+    def __init__(self, inaccuracy):
         self.inaccuracy = inaccuracy
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(0.5)
@@ -20,7 +20,7 @@ class Server:
     def read(self):
         while True:
             try:
-               data, addr = self.sock.recvfrom(1024)
+                data, addr = self.sock.recvfrom(1024)
             except socket.timeout:
                 continue
             fields = Parser.parse_from(data)
@@ -47,10 +47,10 @@ if __name__ == "__main__":
         with cf.ThreadPoolExecutor(max_workers=5) as executor:
             while True:
                 if queue:
-                    executor.submit(s.logic,queue.popleft())
+                    executor.submit(s.logic, queue.popleft())
     except KeyboardInterrupt:
         print("Shut off")
         receive.join(1)
         s.sock.close()
-    except Exception:
-        print("Something went wrong")
+    except Exception as e:
+        print(e)
